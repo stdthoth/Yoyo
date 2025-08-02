@@ -1,8 +1,14 @@
+import { number } from "zod/v4";
+
 async function soroSwapApi<T>(url: string): Promise<T | null> {
   const headers = {
     Authorization: `Bearer ${process.env.SOROSWAP_API_KEY}`,
     "Content-Type": "application/json",
   };
+}
+
+interface RequestBuilderQueryParams {
+  network?: string;
 }
 
 //Quote
@@ -95,21 +101,101 @@ interface SendQuoteResponse {
 }
 
 //Pools
-interface PoolsInfoRequest {}
+// these are query parameters for the available pool request
+interface AvailablePoolsRequest {
+  /**Network in which the pairs will be searched i.e mainnet & testnet */
+  network: string;
+  /** Protocol in which the pairs will be searched */
+  protocol: string;
+  /**Filter pairs by asset lists (e.g. SOROSWAP, AQUA, STELLAR_EXPERT, LOBSTR) */
+  assetList: string[];
+}
+
+interface PoolResponse {
+  /**protocol name */
+  protocol: string;
+  /**Pool Contract Address */
+  address: string;
+  /** first token contract address */
+  tokenA: string;
+  /** */
+  tokenB: string;
+  /** */
+  reserveA: string;
+  /** */
+  reserveB: string;
+  /** */
+  ledgerNo: number;
+}
+
+interface AvailablePoolsResponse {
+  /** an Array of pools */
+  pools: PoolResponse[][];
+}
+
+// path params and query params for the get pools for two tokens req
+interface GetPoolsForTwoTokensRequest {
+  /** path params */
+  tokenA: string;
+  tokenB: string;
+
+  /** query params */
+  network: string;
+  protocol: string[];
+}
+
+interface GetPoolsForTwoTokensResponse {
+  pools: PoolResponse[][];
+}
 //Asset List
+interface ListAssetsRequest {
+  /** query parameter */
+  name: "SOROSWAP" | "AQUA" | "STELLAR_EXPERT" | "LOBSTR";
+}
+
+interface ListAssetResponse {
+  result: object[];
+}
 
 //Price
 
+interface Pricedata {
+  asset: string;
+  referenceCurrency: string;
+  price: string;
+}
+
+interface PriceInfoRequest {
+  /**network with wich the price will be searched i.e mainnet or testnet */
+  network: string;
+  /** asset contract address or list seperated by commas */
+  asset: string[];
+  /** reference currency, default is USD */
+  referenceCurrency?: any;
+}
+
+interface PriceInfoResponse {
+  priceData: Pricedata[][];
+}
+
 // Liquidity
-interface LiquidityRequest {
+interface AddLiquidityRequest {
   assetA: string;
   assetB: string;
   amountA: number;
   amountB: number;
   to: string;
-  slippageBps: string;
+  /**slippage tolerance in basis points (bps). 10000 = 100%,
+   * 100 = 1%, 50 = 0.5%. Default is 50 bps (0.5%) */
+  slippageBps?: string;
 }
 
-interface LiquidityResponse {
+interface AddLiquidityResponse {
+  /** transaction xdr  */
   transactionXdr: string;
 }
+
+function buildUrl(
+  url: string,
+  queryparams?: RequestBuilderQueryParams
+): string {}
